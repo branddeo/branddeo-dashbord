@@ -1,50 +1,41 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
+import { Navigate, Route, Routes } from "react-router-dom"
 
-function App() {
-  const [score, setScore] = useState(0)
+import DashboardLayout from "@/layout/DashboardLayout"
+import AnalyticsPage from "@/pages/AnalyticsPage"
+import CloudPage from "@/pages/CloudPage"
+import HomePage from "@/pages/HomePage"
+import ProfilePage from "@/pages/ProfilePage"
+import ReservationsPage from "@/pages/ReservationsPage"
+import RushesPage from "@/pages/RushesPage"
+import SubscriptionPage from "@/pages/SubscriptionPage"
+import AuthLayout from "@/pages/auth/AuthLayout"
+import ConfirmEmailPage from "@/pages/auth/ConfirmEmailPage"
+import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage"
+import LoginPage from "@/pages/auth/LoginPage"
+import RegisterPage from "@/pages/auth/RegisterPage"
+import ResetPasswordPage from "@/pages/auth/ResetPasswordPage"
 
-  // Fonction pour le jeu simple
-  const playGame = () => {
-    const randomPoints = Math.floor(Math.random() * 10) + 1
-    setScore(score + randomPoints)
-  }
-
+export default function App() {
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif', textAlign: 'center', padding: '50px', backgroundColor: '#f5f5f5' }}>
-      
-      {/* Hero section */}
-      <div style={{ marginBottom: '40px' }}>
-        <img src={heroImg} alt="Branddeo Hero" width="200" style={{ borderRadius: '20px' }} />
-        <h1 style={{ color: '#333' }}>Branddeo Agency</h1>
-        <p style={{ color: '#666', fontSize: '18px' }}>Notre site est en cours de conception. Découvrez notre mini-jeu ci-dessous !</p>
-      </div>
-
-      {/* Jeu simple */}
-      <div style={{ margin: '20px 0' }}>
-        <button
-          onClick={playGame}
-          style={{
-            padding: '15px 30px',
-            fontSize: '18px',
-            backgroundColor: '#ff4d4f',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '10px',
-            cursor: 'pointer',
-          }}
-        >
-          Gagner des points !
-        </button>
-        <p style={{ marginTop: '20px', fontSize: '20px', color: '#333' }}>Score : {score}</p>
-      </div>
-
-      {/* Footer */}
-      <footer style={{ marginTop: '60px', color: '#999', fontSize: '14px' }}>
-        © 2026 Branddeo. Tous droits réservés.
-      </footer>
-    </div>
+    <Routes>
+      <Route path="auth" element={<AuthLayout />}>
+        <Route index element={<Navigate to="/auth/login" replace />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="reset-password" element={<ResetPasswordPage />} />
+        <Route path="confirm-email" element={<ConfirmEmailPage />} />
+      </Route>
+      <Route element={<DashboardLayout />}>
+        <Route index element={<HomePage />} />
+        <Route path="reservations" element={<ReservationsPage />} />
+        <Route path="rushes" element={<RushesPage />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
+        <Route path="cloud" element={<CloudPage />} />
+        <Route path="abonnement" element={<SubscriptionPage />} />
+        <Route path="profil" element={<ProfilePage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
-
-export default App
