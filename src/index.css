@@ -1,13 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/inter";
+@import "@fontsource/khand/400.css";
+@import "@fontsource/khand/500.css";
+@import "@fontsource/khand/600.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
     --font-heading: var(--font-sans);
-    --font-sans: 'Inter Variable', sans-serif;
+    --font-sans: 'Khand', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -55,8 +57,8 @@
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
+    --primary: #ff605c;
+    --primary-foreground: #ffffff;
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
@@ -66,17 +68,17 @@
     --destructive: oklch(0.577 0.245 27.325);
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --ring: #ff605c;
+    --chart-1: #41af6e;
+    --chart-2: #0f4696;
+    --chart-3: #ae00b7;
+    --chart-4: #ffcf00;
+    --chart-5: #a5cd13;
     --radius: 0.625rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-primary: #ff605c;
+    --sidebar-primary-foreground: #ffffff;
     --sidebar-accent: oklch(0.97 0 0);
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
@@ -84,37 +86,37 @@
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
+    --background: #0f081e;
+    --foreground: #f6f7fb;
+    --card: #140d2a;
+    --card-foreground: #f6f7fb;
+    --popover: #140d2a;
+    --popover-foreground: #f6f7fb;
+    --primary: #ff605c;
+    --primary-foreground: #ffffff;
+    --secondary: rgba(255, 255, 255, 0.08);
+    --secondary-foreground: #f6f7fb;
+    --muted: rgba(255, 255, 255, 0.06);
+    --muted-foreground: rgba(246, 247, 251, 0.68);
+    --accent: rgba(255, 96, 92, 0.16);
+    --accent-foreground: #ffffff;
     --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --border: rgba(255, 255, 255, 0.12);
+    --input: rgba(255, 255, 255, 0.14);
+    --ring: #ff605c;
+    --chart-1: #41af6e;
+    --chart-2: #0f4696;
+    --chart-3: #ae00b7;
+    --chart-4: #ffcf00;
+    --chart-5: #a5cd13;
+    --sidebar: #140d2a;
+    --sidebar-foreground: #f6f7fb;
+    --sidebar-primary: #ff605c;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: rgba(255, 255, 255, 0.06);
+    --sidebar-accent-foreground: #f6f7fb;
+    --sidebar-border: rgba(255, 255, 255, 0.1);
+    --sidebar-ring: rgba(255, 96, 92, 0.55);
 }
 
 @layer base {
