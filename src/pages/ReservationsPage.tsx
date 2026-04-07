@@ -125,6 +125,7 @@ export default function ReservationsPage() {
   const [selectedReservationId, setSelectedReservationId] = useState<string | null>(
     null
   )
+  const [hideUpsells, setHideUpsells] = useState(false)
 
   const intent = searchParams.get("intent")
   const durationFromQuery = Number(searchParams.get("duration") ?? "")
@@ -145,6 +146,30 @@ export default function ReservationsPage() {
     if (!selectedReservationId) return null
     return data.reservations.find((r) => r.id === selectedReservationId) ?? null
   }, [data.reservations, selectedReservationId])
+
+  const upsells = useMemo(
+    () => [
+      {
+        id: "upsell_extra_30",
+        title: lang === "fr" ? "30 min supplémentaires" : "Extra 30 min",
+        priceTtc: 45,
+        priceHt: 37,
+      },
+      {
+        id: "upsell_multi_cam",
+        title: lang === "fr" ? "Multi-cam (2 angles)" : "Multi-cam (2 angles)",
+        priceTtc: 80,
+        priceHt: 67,
+      },
+      {
+        id: "upsell_subtitles",
+        title: lang === "fr" ? "Sous-titres (FR)" : "Subtitles (EN/FR)",
+        priceTtc: 60,
+        priceHt: 50,
+      },
+    ],
+    [lang]
+  )
 
   const defaultIncludes = useMemo(
     () =>
@@ -502,6 +527,68 @@ export default function ReservationsPage() {
                     </div>
                   </div>
                 </div>
+
+                {!hideUpsells ? (
+                  <div className="rounded-3xl border px-4 py-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="text-sm font-semibold">
+                          {lang === "fr" ? "Options" : "Add-ons"}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {lang === "fr"
+                            ? "Ajoutez des options à votre session."
+                            : "Add options to your session."}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        className="rounded-full"
+                        onClick={() => setHideUpsells(true)}
+                      >
+                        {lang === "fr" ? "Masquer" : "Hide"}
+                      </Button>
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                      {upsells.map((u) => (
+                        <div
+                          key={u.id}
+                          className="flex items-center justify-between gap-3 rounded-3xl border bg-muted/10 px-4 py-3"
+                        >
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold">{u.title}</div>
+                            <div className="truncate text-xs text-muted-foreground tabular-nums">
+                              {u.priceTtc}€ TTC • {u.priceHt}€ HT
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            type="button"
+                            className="rounded-full"
+                            onClick={() => {}}
+                          >
+                            {lang === "fr" ? "Ajouter" : "Add"}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      className="rounded-full"
+                      onClick={() => setHideUpsells(false)}
+                    >
+                      {lang === "fr" ? "Afficher les options" : "Show add-ons"}
+                    </Button>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-end gap-2">
                   <Button

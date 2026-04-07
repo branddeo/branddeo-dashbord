@@ -731,7 +731,7 @@ export default function DashboardLayout() {
   }
 
   const data = {
-    user: { firstName: "Alex", lastName: "Branddeo" },
+    user: { firstName: "Fanel", lastName: "Branddeo" },
     cloud,
     cards,
     reservations,

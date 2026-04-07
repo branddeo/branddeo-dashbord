@@ -61,13 +61,13 @@ export default function ProfilePage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = searchParams.get("tab") ?? "infos"
 
-  const [firstName, setFirstName] = useState("Alex")
+  const [firstName, setFirstName] = useState("Fanel")
   const [lastName, setLastName] = useState("Branddeo")
   const [phone, setPhone] = useState("+33 6 00 00 00 00")
   const [company, setCompany] = useState("Branddeo")
   const [vat, setVat] = useState("FR00000000000")
 
-  const [cardName, setCardName] = useState("Alex Branddeo")
+  const [cardName, setCardName] = useState("Fanel Branddeo")
   const [cardNumber, setCardNumber] = useState("")
   const [expMonth, setExpMonth] = useState("")
   const [expYear, setExpYear] = useState("")
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                         id="cardName"
                         value={cardName}
                         onChange={(e) => setCardName(e.target.value)}
-                        placeholder="Alex Branddeo"
+                        placeholder="Fanel Branddeo"
                       />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
