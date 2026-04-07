@@ -657,7 +657,7 @@ export default function DashboardLayout() {
   const [rushes, setRushes] = useLocalStorageState<RushItem[]>("branddeo.rushes", [
     {
       id: "rush_01",
-      title: "Session Branddeo — Rush 01",
+      title: "Session Branddeo : Rush 01",
       studio: "Studio Branddeo",
       studioId: "branddeo",
       date: "2026-04-10T13:30:00.000Z",
@@ -665,7 +665,7 @@ export default function DashboardLayout() {
     },
     {
       id: "rush_02",
-      title: "Podcast — Master audio",
+      title: "Podcast : Master audio",
       studio: "Studio Branddeo",
       studioId: "branddeo",
       date: "2026-04-12T17:05:00.000Z",
@@ -673,7 +673,7 @@ export default function DashboardLayout() {
     },
     {
       id: "rush_03",
-      title: "Interview — Rush brut",
+      title: "Interview : Rush brut",
       studio: "Studio Branddeo",
       studioId: "branddeo",
       date: "2026-04-14T09:15:00.000Z",

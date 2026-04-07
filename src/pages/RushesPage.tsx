@@ -68,8 +68,8 @@ export default function RushesPage() {
         </h1>
         <p className="text-sm text-muted-foreground">
           {lang === "fr"
-            ? "Exports, rushes et livrables — tout au même endroit."
-            : "Exports, rushes and deliverables — in one place."}
+            ? "Exports, rushes et livrables : tout au même endroit."
+            : "Exports, rushes and deliverables : in one place."}
         </p>
       </div>
 
