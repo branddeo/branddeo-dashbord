@@ -9,6 +9,7 @@ import {
 } from "react-big-calendar"
 import moment from "moment"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -29,6 +30,14 @@ type DashboardOutletContext = {
       start: string
       end: string
       status: "confirmed" | "pending" | "cancelled"
+      offer?: {
+        label: "Tournage 1h" | "Tournage 2h" | "Tournage 3h"
+        ttc: number
+        ht: number
+        hours: 1 | 2 | 3
+        popular?: boolean
+        includes: string[]
+      }
     }>
   }
   actions: {
@@ -111,6 +120,10 @@ export default function ReservationsPage() {
   const { lang, data, actions } = useOutletContext<DashboardOutletContext>()
   const [searchParams] = useSearchParams()
   const [calendarDate, setCalendarDate] = useState<Date>(() => new Date())
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [selectedReservationId, setSelectedReservationId] = useState<string | null>(
+    null
+  )
 
   const intent = searchParams.get("intent")
   const durationFromQuery = Number(searchParams.get("duration") ?? "")
@@ -126,6 +139,31 @@ export default function ReservationsPage() {
   useEffect(() => {
     moment.locale(lang === "fr" ? "fr" : "en-gb")
   }, [lang])
+
+  const selectedReservation = useMemo(() => {
+    if (!selectedReservationId) return null
+    return data.reservations.find((r) => r.id === selectedReservationId) ?? null
+  }, [data.reservations, selectedReservationId])
+
+  const defaultIncludes = useMemo(
+    () =>
+      lang === "fr"
+        ? [
+            "Personnalisation à l'infini de votre espace de tournage",
+            "Pré-montage (vidéo pouvant être publiée)",
+            "Accompagnement sur place pour une session fluide",
+            "Matériel audiovisuel de pointe (Caméra Sony, Micro Shure, etc)",
+            "Livraison dès la fin du tournage",
+          ]
+        : [
+            "Unlimited set customization",
+            "Pre-edit (ready to publish)",
+            "On-site assistance for a smooth session",
+            "Pro gear (Sony camera, Shure mic, etc.)",
+            "Delivery right after shooting",
+          ],
+    [lang]
+  )
 
   const events = useMemo<CalendarEvent[]>(
     () =>
@@ -325,10 +363,173 @@ export default function ReservationsPage() {
                 }
                 return {}
               }}
+              onSelectEvent={(event) => {
+                setSelectedReservationId(event.resource.id)
+                setDetailsOpen(true)
+              }}
             />
           </div>
         </CardContent>
       </Card>
+
+      <Sheet open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <SheetContent side="right" className="w-[420px] p-0">
+          <SheetHeader className="border-b px-6 py-5">
+            <SheetTitle>
+              {lang === "fr" ? "Détails de la session" : "Session details"}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="space-y-5 px-6 py-5">
+            {selectedReservation ? (
+              <>
+                <div className="space-y-1">
+                  <div className="text-sm font-semibold">
+                    {selectedReservation.studio}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {lang === "fr" ? "Studio unique" : "Single studio"}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 rounded-3xl border bg-muted/10 px-4 py-3">
+                  <div className="text-sm font-semibold">
+                    {lang === "fr" ? "Statut" : "Status"}
+                  </div>
+                  <Badge variant="secondary" className="rounded-full">
+                    {lang === "fr"
+                      ? selectedReservation.status === "confirmed"
+                        ? "Confirmée"
+                        : selectedReservation.status === "pending"
+                          ? "En attente"
+                          : "Annulée"
+                      : selectedReservation.status === "confirmed"
+                        ? "Confirmed"
+                        : selectedReservation.status === "pending"
+                          ? "Pending"
+                          : "Cancelled"}
+                  </Badge>
+                </div>
+
+                <div className="space-y-3 rounded-3xl border px-4 py-4">
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <div className="text-muted-foreground">
+                      {lang === "fr" ? "Date" : "Date"}
+                    </div>
+                    <div className="font-semibold">
+                      {moment(selectedReservation.start).format(
+                        lang === "fr" ? "DD/MM/YYYY" : "MMM D, YYYY"
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <div className="text-muted-foreground">
+                      {lang === "fr" ? "Heure" : "Time"}
+                    </div>
+                    <div className="font-semibold tabular-nums">
+                      {moment(selectedReservation.start).format(
+                        lang === "fr" ? "HH:mm" : "h:mm A"
+                      )}{" "}
+                      –{" "}
+                      {moment(selectedReservation.end).format(
+                        lang === "fr" ? "HH:mm" : "h:mm A"
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <div className="text-muted-foreground">
+                      {lang === "fr" ? "Durée" : "Duration"}
+                    </div>
+                    <div className="font-semibold tabular-nums">
+                      {(() => {
+                        const minutes =
+                          (new Date(selectedReservation.end).getTime() -
+                            new Date(selectedReservation.start).getTime()) /
+                          60000
+                        const h = Math.floor(minutes / 60)
+                        const m = Math.round(minutes % 60)
+                        if (lang === "fr") return h > 0 ? `${h}h${m ? ` ${m}m` : ""}` : `${m}m`
+                        return h > 0 ? `${h}h ${m ? `${m}m` : ""}`.trim() : `${m}m`
+                      })()}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border px-4 py-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="text-sm font-semibold">
+                        {lang === "fr" ? "Offre" : "Plan"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {selectedReservation.offer?.label ??
+                          (lang === "fr" ? "Tournage (à définir)" : "Shooting (to be set)")}
+                      </div>
+                    </div>
+                    {selectedReservation.offer?.popular ? (
+                      <Badge className="rounded-full" variant="secondary">
+                        {lang === "fr" ? "Populaire" : "Popular"}
+                      </Badge>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-4 grid gap-3 rounded-3xl bg-muted/10 p-4">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <div className="text-sm font-semibold">
+                        {lang === "fr" ? "Tarif" : "Pricing"}
+                      </div>
+                      <div className="text-sm text-muted-foreground tabular-nums">
+                        {selectedReservation.offer
+                          ? `${selectedReservation.offer.ttc}€ TTC • ${selectedReservation.offer.ht}€ HT`
+                          : "—"}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-sm font-semibold">
+                        {lang === "fr" ? "Inclus" : "Included"}
+                      </div>
+                      <div className="space-y-2">
+                        {(selectedReservation.offer?.includes ?? defaultIncludes).map((item) => (
+                          <div key={item} className="flex items-start gap-2 text-sm">
+                            <div className="mt-0.5 flex size-5 items-center justify-center rounded-full bg-primary/10 text-primary">
+                              <BadgeCheck className="size-3.5" />
+                            </div>
+                            <div className="text-muted-foreground">{item}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    className="rounded-full"
+                    type="button"
+                    onClick={() => setDetailsOpen(false)}
+                  >
+                    {lang === "fr" ? "Fermer" : "Close"}
+                  </Button>
+                  <Button
+                    className="rounded-full"
+                    type="button"
+                    onClick={() => {
+                      setDetailsOpen(false)
+                      setBookOpen(true)
+                    }}
+                  >
+                    {lang === "fr" ? "Reprogrammer" : "Reschedule"}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="rounded-3xl border py-10 text-center text-sm text-muted-foreground">
+                {lang === "fr" ? "Aucune donnée." : "No data."}
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
