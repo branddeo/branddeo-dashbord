@@ -89,7 +89,7 @@ export default function HomePage() {
         title={greeting}
         subtitle={
           lang === "fr"
-            ? "Aperçu de votre espace Branddeo."
+            ? "Votre espace Branddeo"
             : "Branddeo workspace overview."
         }
       />

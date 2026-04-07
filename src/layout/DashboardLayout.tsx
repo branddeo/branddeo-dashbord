@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   Calendar,
   Cloud,
+  LogOut,
   X,
   Film,
   Home,
@@ -425,6 +426,18 @@ function SidebarFooter({
             <Settings className="size-4" />
           </NavLink>
         </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          type="button"
+          className={cn(collapsed ? "" : "hidden")}
+          onClick={() => window.location.assign("/auth/login")}
+        >
+          <span className="sr-only">
+            {lang === "fr" ? "Se déconnecter" : "Sign out"}
+          </span>
+          <LogOut className="size-4" />
+        </Button>
       </div>
     </div>
   )
@@ -832,7 +845,7 @@ export default function DashboardLayout() {
                       onClick={() => navigate("/cloud")}
                     >
                       <Cloud className="size-4" />
-                      <span>{lang === "fr" ? "Cloud" : "Cloud"}</span>
+                      <span className="hidden sm:inline">{lang === "fr" ? "Cloud" : "Cloud"}</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="rounded-2xl">
@@ -848,13 +861,34 @@ export default function DashboardLayout() {
                       className="rounded-full"
                       onClick={() => navigate("/reservations?intent=book")}
                     >
-                      {t.topbar.bookSession}
+                      <span className="hidden sm:inline">{t.topbar.bookSession}</span>
+                      <span className="sm:hidden">{lang === "fr" ? "Réserver" : "Book"}</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="rounded-2xl">
                     {lang === "fr"
                       ? "Ouvrir la création de session"
                       : "Open booking creation"}
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      type="button"
+                      className="rounded-full"
+                      onClick={() => window.location.assign("/auth/login")}
+                    >
+                      <span className="sr-only">
+                        {lang === "fr" ? "Se déconnecter" : "Sign out"}
+                      </span>
+                      <LogOut className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="rounded-2xl">
+                    {lang === "fr" ? "Se déconnecter" : "Sign out"}
                   </TooltipContent>
                 </Tooltip>
               </div>

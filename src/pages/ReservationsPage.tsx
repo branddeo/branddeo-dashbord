@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react"
 import { useNavigate, useOutletContext, useSearchParams } from "react-router-dom"
 import {
   Calendar as BigCalendar,
@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Sheet,
   SheetContent,
@@ -379,7 +380,8 @@ export default function ReservationsPage() {
               {lang === "fr" ? "Détails de la session" : "Session details"}
             </SheetTitle>
           </SheetHeader>
-          <div className="space-y-5 px-6 py-5">
+          <ScrollArea className="h-[calc(100svh-92px)] px-6 py-5">
+            <div className="space-y-5">
             {selectedReservation ? (
               <>
                 <div className="space-y-1">
@@ -527,7 +529,8 @@ export default function ReservationsPage() {
                 {lang === "fr" ? "Aucune donnée." : "No data."}
               </div>
             )}
-          </div>
+            </div>
+          </ScrollArea>
         </SheetContent>
       </Sheet>
     </div>
