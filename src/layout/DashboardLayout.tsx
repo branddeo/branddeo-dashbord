@@ -6,7 +6,6 @@ import {
   Calendar,
   Cloud,
   X,
-  Coins,
   Film,
   Home,
   Moon,
@@ -36,6 +35,11 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import {
   Select,
   SelectContent,
@@ -190,7 +194,6 @@ function useI18n() {
         topbar: {
           search: "Rechercher…",
           searchHint: "Ctrl K",
-          credits: "Crédits",
           bookSession: "Réserver une session",
         },
         search: {
@@ -241,7 +244,6 @@ function useI18n() {
         topbar: {
           search: "Search…",
           searchHint: "Ctrl K",
-          credits: "Credits",
           bookSession: "Book a session",
         },
         search: {
@@ -329,7 +331,7 @@ function SidebarNav({
           ) : null}
           {section.items.map((item) => {
             const Icon = item.icon
-            return (
+            const link = (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -351,6 +353,17 @@ function SidebarNav({
                   {item.label}
                 </span>
               </NavLink>
+            )
+
+            if (!collapsed) return link
+
+            return (
+              <Tooltip key={item.to}>
+                <TooltipTrigger asChild>{link}</TooltipTrigger>
+                <TooltipContent side="right" className="rounded-2xl">
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
             )
           })}
         </div>
@@ -433,7 +446,7 @@ function Sidebar({
   return (
     <aside
       className={cn(
-        "hidden h-svh flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex",
+        "sticky top-0 hidden h-svh flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex",
         collapsed ? "w-[72px]" : "w-[280px]"
       )}
     >
@@ -490,12 +503,14 @@ function Sidebar({
         </Button>
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 px-3 pb-4">
-        <div className="space-y-2 py-1">
-          {!collapsed ? <div className="px-3 pt-1" /> : null}
-          <SidebarNav collapsed={collapsed} t={t} />
+      <div className="flex min-h-0 flex-1 flex-col gap-4 px-3 pb-4">
+        <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar pr-2">
+          <div className="space-y-2 py-1">
+            {!collapsed ? <div className="px-3 pt-1" /> : null}
+            <SidebarNav collapsed={collapsed} t={t} />
+          </div>
         </div>
-        <div className="mt-auto">
+        <div className="shrink-0">
           <SidebarFooter collapsed={collapsed} lang={lang} setLang={setLang} t={t} />
         </div>
       </div>
@@ -587,7 +602,7 @@ function MobileSidebar({
 export default function DashboardLayout() {
   const navigate = useNavigate()
   const cardIdRef = useRef(0)
-  const [reservationSeq, setReservationSeq] = useLocalStorageState<number>(
+  const [, setReservationSeq] = useLocalStorageState<number>(
     "branddeo.seq.reservations",
     3
   )
@@ -599,10 +614,6 @@ export default function DashboardLayout() {
   const { theme, toggle } = useTheme()
   const { lang, setLang, t } = useI18n()
   const [searchOpen, setSearchOpen] = useState(false)
-  const [credits, setCredits] = useLocalStorageState<number>(
-    "branddeo.credits",
-    0
-  )
   const [cloud, setCloud] = useLocalStorageState<CloudState>("branddeo.cloud", {
     enabled: false,
     storageGb: 100,
@@ -670,10 +681,6 @@ export default function DashboardLayout() {
     },
   ])
 
-  const addCredits = (amount: number) => {
-    setCredits((prev) => Math.max(0, prev + amount))
-  }
-
   const setCloudEnabled = (enabled: boolean) => {
     setCloud((prev) => ({ ...prev, enabled }))
   }
@@ -712,7 +719,6 @@ export default function DashboardLayout() {
 
   const data = {
     user: { firstName: "Alex", lastName: "Branddeo" },
-    credits,
     cloud,
     cards,
     reservations,
@@ -720,7 +726,6 @@ export default function DashboardLayout() {
   }
 
   const actions = {
-    addCredits,
     setCloudEnabled,
     addCard,
     removeCard,
@@ -785,40 +790,73 @@ export default function DashboardLayout() {
               </div>
 
               <div className="ml-auto flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  type="button"
-                  className="rounded-full"
-                  onClick={toggle}
-                >
-                  <span className="sr-only">
-                    {theme === "dark" ? "Activer le mode clair" : "Activer le mode sombre"}
-                  </span>
-                  {theme === "dark" ? (
-                    <Sun className="size-4" />
-                  ) : (
-                    <Moon className="size-4" />
-                  )}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  type="button"
-                  className="rounded-full"
-                  onClick={() => navigate("/abonnement")}
-                >
-                  <Coins className="size-4" />
-                  <span className="tabular-nums">{credits}</span>
-                </Button>
-                <Button
-                  size="sm"
-                  type="button"
-                  className="rounded-full"
-                  onClick={() => navigate("/reservations?intent=book")}
-                >
-                  {t.topbar.bookSession}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      type="button"
+                      className="rounded-full"
+                      onClick={toggle}
+                    >
+                      <span className="sr-only">
+                        {theme === "dark"
+                          ? "Activer le mode clair"
+                          : "Activer le mode sombre"}
+                      </span>
+                      {theme === "dark" ? (
+                        <Sun className="size-4" />
+                      ) : (
+                        <Moon className="size-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="rounded-2xl">
+                    {theme === "dark"
+                      ? lang === "fr"
+                        ? "Mode clair"
+                        : "Light mode"
+                      : lang === "fr"
+                        ? "Mode sombre"
+                        : "Dark mode"}
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      type="button"
+                      className="rounded-full"
+                      onClick={() => navigate("/cloud")}
+                    >
+                      <Cloud className="size-4" />
+                      <span>{lang === "fr" ? "Cloud" : "Cloud"}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="rounded-2xl">
+                    {lang === "fr" ? "Ouvrir Branddeo Cloud" : "Open Branddeo Cloud"}
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      type="button"
+                      className="rounded-full"
+                      onClick={() => navigate("/reservations?intent=book")}
+                    >
+                      {t.topbar.bookSession}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="rounded-2xl">
+                    {lang === "fr"
+                      ? "Ouvrir la création de session"
+                      : "Open booking creation"}
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
           </header>
@@ -994,7 +1032,8 @@ function BranddeoAi({
       q.includes("session")
     const mentionsCloud = q.includes("cloud") || q.includes("stock") || q.includes("sauveg")
     const mentionsCard = q.includes("carte") || q.includes("card") || q.includes("paiement")
-    const mentionsCredits = q.includes("crédit") || q.includes("credit")
+    const mentionsPricing =
+      q.includes("tarif") || q.includes("prix") || q.includes("abonnement") || q.includes("plan")
     const mentionsAnalytics = q.includes("stats") || q.includes("analyt") || q.includes("analytics")
 
     if (mentionsRush && !cloud.enabled) {
@@ -1011,20 +1050,20 @@ function BranddeoAi({
 
     if (mentionsBook) {
       return lang === "fr"
-        ? "Pour réserver : ouvre “Réservations” puis clique “Réserver une session”. Tu peux filtrer par date/studio et valider."
-        : "To book: open “Bookings”, then click “Book a session”. You can filter by date/studio and confirm."
+        ? "Pour réserver : ouvre “Réservations” puis clique “Réserver une session”. Choisis une date, une heure et une durée, puis crée la session."
+        : "To book: open “Bookings” then click “Book a session”. Pick a date, time and duration, then create the session."
     }
 
     if (mentionsCloud) {
       return lang === "fr"
-        ? `Branddeo Cloud sauvegarde tes rushes et te permet la prévisualisation en ligne. Offre mock : ${cloud.priceEurMonthly}€ / mois pour ${cloud.storageGb}Go.`
-        : `Branddeo Cloud saves your rushes and enables online preview. Mock plan: €${cloud.priceEurMonthly}/month for ${cloud.storageGb}GB.`
+        ? `Branddeo Cloud sauvegarde tes rushes et te permet la prévisualisation en ligne. Offre : ${cloud.priceEurMonthly}€ / mois pour ${cloud.storageGb}Go.`
+        : `Branddeo Cloud saves your rushes and enables online preview. Plan: €${cloud.priceEurMonthly}/month for ${cloud.storageGb}GB.`
     }
 
-    if (mentionsCredits) {
+    if (mentionsPricing) {
       return lang === "fr"
-        ? "Les crédits ne sont pas mensuels : tu peux en acheter et ils restent dans ton compte. Va dans “Abonnement” pour gérer les crédits."
-        : "Credits are not monthly: you can buy them and they stay on your account. Go to “Subscription” to manage credits."
+        ? "Les tarifs de tournage sont dans “Abonnement”. Tu peux choisir 1h, 2h (populaire) ou 3h et cliquer “Réserver”."
+        : "Shooting pricing is in “Subscription”. Choose 1h, 2h (popular) or 3h and click “Book”."
     }
 
     if (mentionsCard) {
@@ -1040,8 +1079,8 @@ function BranddeoAi({
     }
 
     return lang === "fr"
-      ? "Je peux aider sur : réserver une session, retrouver les rushes, Branddeo Cloud, crédits, facturation. Dis-moi ce que tu cherches."
-      : "I can help with: booking a session, finding rushes, Branddeo Cloud, credits, billing. Tell me what you need."
+      ? "Je peux aider sur : réserver une session, retrouver les rushes, Branddeo Cloud, tarifs, facturation. Dis-moi ce que tu cherches."
+      : "I can help with: booking a session, finding rushes, Branddeo Cloud, pricing, billing. Tell me what you need."
   }
 
   const sendMessage = (text: string) => {

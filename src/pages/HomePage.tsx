@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { Calendar, Film, Info, PlusCircle } from "lucide-react"
+import { Calendar, Cloud, Film, Info } from "lucide-react"
 import { useNavigate, useOutletContext } from "react-router-dom"
 
 import { Badge } from "@/components/ui/badge"
@@ -25,7 +25,7 @@ type DashboardOutletContext = {
   lang: "fr" | "en"
   data: {
     user: { firstName: string; lastName: string }
-    credits: number
+    cloud: { enabled: boolean; storageGb: number; priceEurMonthly: number }
     reservations: Array<{
       id: string
       studio: string
@@ -155,25 +155,28 @@ export default function HomePage() {
         <Card className="md:col-span-1">
           <CardHeader>
             <CardTitle className="text-base">
-              {lang === "fr" ? "Crédits" : "Credits"}
+              Branddeo Cloud
             </CardTitle>
             <CardDescription>
-              {lang === "fr" ? "Disponibles" : "Available"}
+              {data.cloud.enabled
+                ? lang === "fr"
+                  ? "Actif • prévisualisation et sauvegarde."
+                  : "Enabled • preview and backup."
+                : lang === "fr"
+                  ? "Inactif • conservation 7 jours."
+                  : "Disabled • 7-day retention."}
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex items-center justify-between gap-3">
-            <div className="text-3xl font-semibold tabular-nums">
-              {data.credits}
-            </div>
+          <CardContent>
             <Button
-              variant="outline"
-              className="rounded-full"
+              variant={data.cloud.enabled ? "secondary" : "default"}
+              className="w-full rounded-full"
               size="sm"
               type="button"
-              onClick={() => navigate("/abonnement")}
+              onClick={() => navigate("/cloud")}
             >
-              <PlusCircle className="size-4" />
-              {lang === "fr" ? "Acheter" : "Buy"}
+              <Cloud className="size-4" />
+              {lang === "fr" ? "Ouvrir le Cloud" : "Open Cloud"}
             </Button>
           </CardContent>
         </Card>

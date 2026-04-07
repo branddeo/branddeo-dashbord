@@ -2,15 +2,13 @@ import { useMemo } from "react"
 import { useOutletContext } from "react-router-dom"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 
 type DashboardOutletContext = {
   lang: "fr" | "en"
   data: {
-    credits: number
     reservations: Array<{ id: string; status: string }>
     rushes: Array<{ id: string; status: string }>
-    cloud?: { enabled: boolean; usedGb: number; storageGb: number }
+    cloud?: { enabled: boolean }
   }
 }
 
@@ -35,10 +33,6 @@ export default function AnalyticsPage() {
     return { labels, sessions, exports, max }
   }, [lang])
 
-  const cloudPct = data.cloud
-    ? Math.min(100, Math.round((data.cloud.usedGb / Math.max(1, data.cloud.storageGb)) * 100))
-    : 0
-
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
       <div className="space-y-1">
@@ -52,17 +46,7 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="rounded-3xl">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">
-              {lang === "fr" ? "Crédits" : "Credits"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold tabular-nums">
-            {data.credits}
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 md:grid-cols-3">
         <Card className="rounded-3xl">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold">
@@ -99,7 +83,7 @@ export default function AnalyticsPage() {
         <Card className="rounded-3xl lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">
-              {lang === "fr" ? "Activité (mock)" : "Activity (mock)"}
+              {lang === "fr" ? "Activité" : "Activity"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -146,36 +130,22 @@ export default function AnalyticsPage() {
         <Card className="rounded-3xl">
           <CardHeader>
             <CardTitle className="text-base">
-              {lang === "fr" ? "Cloud (mock)" : "Cloud (mock)"}
+              {lang === "fr" ? "Cloud" : "Cloud"}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {data.cloud ? (
-              <>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-semibold tabular-nums">
-                    {data.cloud.usedGb} / {data.cloud.storageGb} {lang === "fr" ? "Go" : "GB"}
-                  </span>
-                  <span className="text-muted-foreground tabular-nums">{cloudPct}%</span>
-                </div>
-                <Progress value={cloudPct} />
-                <div className="text-xs text-muted-foreground">
-                  {data.cloud.enabled
-                    ? lang === "fr"
-                      ? "Branddeo Cloud est actif."
-                      : "Branddeo Cloud is enabled."
-                    : lang === "fr"
-                      ? "Branddeo Cloud est inactif."
-                      : "Branddeo Cloud is disabled."}
-                </div>
-              </>
-            ) : (
-              <div className="text-sm text-muted-foreground">
-                {lang === "fr"
-                  ? "Aucune donnée cloud."
-                  : "No cloud data."}
-              </div>
-            )}
+          <CardContent className="space-y-2">
+            <div className="text-3xl font-semibold tabular-nums">
+              {data.cloud?.enabled ? "ON" : "OFF"}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {data.cloud?.enabled
+                ? lang === "fr"
+                  ? "Branddeo Cloud est actif."
+                  : "Branddeo Cloud is enabled."
+                : lang === "fr"
+                  ? "Branddeo Cloud est inactif."
+                  : "Branddeo Cloud is disabled."}
+            </div>
           </CardContent>
         </Card>
       </div>

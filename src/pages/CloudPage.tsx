@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 
 type DashboardOutletContext = {
@@ -59,11 +58,6 @@ export default function CloudPage() {
     )
   }, [data.rushes, q])
 
-  const usagePct = Math.min(
-    100,
-    Math.round((data.cloud.usedGb / Math.max(1, data.cloud.storageGb)) * 100)
-  )
-
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
       <div className="space-y-1">
@@ -76,25 +70,33 @@ export default function CloudPage() {
       </div>
 
       <Card className="rounded-3xl">
-        <CardContent className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <div className="text-sm font-semibold">
-              {lang === "fr" ? "Activer Branddeo Cloud" : "Enable Branddeo Cloud"}
+        <CardContent className="space-y-5 py-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <div className="text-sm font-semibold">
+                {lang === "fr" ? "Activer Branddeo Cloud" : "Enable Branddeo Cloud"}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {lang === "fr"
+                  ? `${formatEuro(data.cloud.priceEurMonthly, lang)} / mois • ${data.cloud.storageGb} Go`
+                  : `${formatEuro(data.cloud.priceEurMonthly, lang)} / month • ${data.cloud.storageGb} GB`}
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">
-              {lang === "fr"
-                ? `${formatEuro(data.cloud.priceEurMonthly, lang)} / mois • ${data.cloud.storageGb} Go`
-                : `${formatEuro(data.cloud.priceEurMonthly, lang)} / month • ${data.cloud.storageGb} GB`}
+            <div className="flex items-center gap-3">
+              <div className="text-sm font-medium text-muted-foreground">
+                {data.cloud.enabled
+                  ? lang === "fr"
+                    ? "Actif"
+                    : "On"
+                  : lang === "fr"
+                    ? "Inactif"
+                    : "Off"}
+              </div>
+              <Switch
+                checked={data.cloud.enabled}
+                onCheckedChange={(v) => actions.setCloudEnabled(Boolean(v))}
+              />
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="text-sm font-medium text-muted-foreground">
-              {data.cloud.enabled ? (lang === "fr" ? "Actif" : "On") : lang === "fr" ? "Inactif" : "Off"}
-            </div>
-            <Switch
-              checked={data.cloud.enabled}
-              onCheckedChange={(v) => actions.setCloudEnabled(Boolean(v))}
-            />
           </div>
         </CardContent>
       </Card>
@@ -119,151 +121,122 @@ export default function CloudPage() {
         </Card>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="rounded-3xl md:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-base">
-              {lang === "fr" ? "Stockage" : "Storage"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-semibold tabular-nums">
-                {data.cloud.usedGb} / {data.cloud.storageGb} {lang === "fr" ? "Go" : "GB"}
-              </span>
-              <span className="text-muted-foreground tabular-nums">{usagePct}%</span>
-            </div>
-            <Progress value={usagePct} />
-            <div className="text-xs text-muted-foreground">
-              {lang === "fr"
-                ? "Les valeurs sont des mocks pour l’instant."
-                : "These values are mocks for now."}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-3xl md:col-span-2">
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-base">
-              {lang === "fr" ? "Bibliothèque Cloud" : "Cloud library"}
-            </CardTitle>
-            <div className="w-full sm:w-[320px]">
-              <Input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder={lang === "fr" ? "Rechercher une vidéo…" : "Search a video…"}
-                className="h-10 rounded-3xl"
-              />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {filtered.map((r) => {
-                const isLocked = !data.cloud.enabled
-                const isPreviewing = previewId === r.id
-                return (
-                  <Card key={r.id} className="rounded-3xl">
-                    <CardContent className="space-y-3 py-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="truncate text-sm font-semibold">{r.title}</div>
-                          <div className="truncate text-xs text-muted-foreground">
-                            {r.studio} • {format.dateTime(r.date)}
-                          </div>
+      <Card className="rounded-3xl">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-base">
+            {lang === "fr" ? "Bibliothèque Cloud" : "Cloud library"}
+          </CardTitle>
+          <div className="w-full sm:w-[360px]">
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={lang === "fr" ? "Rechercher une vidéo…" : "Search a video…"}
+              className="h-10 rounded-3xl"
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((r) => {
+              const isLocked = !data.cloud.enabled
+              const isPreviewing = previewId === r.id
+              return (
+                <Card key={r.id} className="rounded-3xl">
+                  <CardContent className="space-y-3 py-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold">{r.title}</div>
+                        <div className="truncate text-xs text-muted-foreground">
+                          {r.studio} • {format.dateTime(r.date)}
                         </div>
-                        <Badge variant="secondary" className="rounded-full">
-                          {lang === "fr"
-                            ? r.status === "ready"
-                              ? "Prêt"
-                              : "En traitement"
-                            : r.status === "ready"
-                              ? "Ready"
-                              : "Processing"}
-                        </Badge>
                       </div>
+                      <Badge variant="secondary" className="rounded-full">
+                        {lang === "fr"
+                          ? r.status === "ready"
+                            ? "Prêt"
+                            : "En traitement"
+                          : r.status === "ready"
+                            ? "Ready"
+                            : "Processing"}
+                      </Badge>
+                    </div>
 
-                      <div className="rounded-3xl border bg-muted/20 p-3">
-                        {isLocked ? (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Lock className="size-4" />
-                            {lang === "fr"
-                              ? "Prévisualisation disponible avec Branddeo Cloud."
-                              : "Preview available with Branddeo Cloud."}
+                    <div className="rounded-3xl border bg-muted/20 p-3">
+                      {isLocked ? (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Lock className="size-4" />
+                          {lang === "fr"
+                            ? "Prévisualisation disponible avec Branddeo Cloud."
+                            : "Preview available with Branddeo Cloud."}
+                        </div>
+                      ) : isPreviewing ? (
+                        <div className="space-y-2">
+                          <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black/90">
+                            <video className="h-full w-full object-cover" controls autoPlay muted>
+                              <source
+                                src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+                                type="video/mp4"
+                              />
+                            </video>
                           </div>
-                        ) : isPreviewing ? (
-                          <div className="space-y-2">
-                            <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black/90">
-                              <video
-                                className="h-full w-full object-cover"
-                                controls
-                                autoPlay
-                                muted
-                              >
-                                <source
-                                  src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
-                                  type="video/mp4"
-                                />
-                              </video>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              type="button"
-                              className="w-full rounded-full"
-                              onClick={() => setPreviewId(null)}
-                            >
-                              {lang === "fr" ? "Fermer" : "Close"}
-                            </Button>
-                          </div>
-                        ) : (
                           <Button
                             variant="outline"
                             size="sm"
                             type="button"
                             className="w-full rounded-full"
-                            onClick={() => setPreviewId(r.id)}
+                            onClick={() => setPreviewId(null)}
                           >
-                            <Play className="size-4" />
-                            {lang === "fr" ? "Prévisualiser" : "Preview"}
+                            {lang === "fr" ? "Fermer" : "Close"}
                           </Button>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          type="button"
-                          className="flex-1 rounded-full"
-                          onClick={() => navigate(`/rushes?q=${encodeURIComponent(r.title)}`)}
-                        >
-                          <Film className="size-4" />
-                          {lang === "fr" ? "Voir dans Rushes" : "Open in Rushes"}
-                        </Button>
+                        </div>
+                      ) : (
                         <Button
                           variant="outline"
                           size="sm"
                           type="button"
-                          className="rounded-full"
-                          onClick={() =>
-                            window.open(
-                              "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-                              "_blank",
-                              "noopener,noreferrer"
-                            )
-                          }
+                          className="w-full rounded-full"
+                          onClick={() => setPreviewId(r.id)}
                         >
-                          <Download className="size-4" />
+                          <Play className="size-4" />
+                          {lang === "fr" ? "Prévisualiser" : "Preview"}
                         </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        type="button"
+                        className="flex-1 rounded-full"
+                        onClick={() => navigate(`/rushes?q=${encodeURIComponent(r.title)}`)}
+                      >
+                        <Film className="size-4" />
+                        {lang === "fr" ? "Voir dans Rushes" : "Open in Rushes"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        type="button"
+                        className="rounded-full"
+                        onClick={() =>
+                          window.open(
+                            "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+                            "_blank",
+                            "noopener,noreferrer"
+                          )
+                        }
+                      >
+                        <Download className="size-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

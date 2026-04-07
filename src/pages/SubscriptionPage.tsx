@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react"
-import { Check, Cloud, Coins, CreditCard } from "lucide-react"
+import { useMemo } from "react"
+import { BadgeCheck, Cloud, CreditCard, Sparkles } from "lucide-react"
 import { useNavigate, useOutletContext } from "react-router-dom"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -11,21 +12,16 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Slider } from "@/components/ui/slider"
 
 type DashboardOutletContext = {
   lang: "fr" | "en"
   data: {
-    credits: number
     cloud: {
       enabled: boolean
       storageGb: number
       priceEurMonthly: number
     }
     cards: Array<unknown>
-  }
-  actions: {
-    addCredits: (amount: number) => void
   }
 }
 
@@ -40,18 +36,99 @@ function formatMoney(amount: number, lang: "fr" | "en") {
 
 export default function SubscriptionPage() {
   const navigate = useNavigate()
-  const { lang, data, actions } = useOutletContext<DashboardOutletContext>()
-  const [creditPack, setCreditPack] = useState(500)
+  const { lang, data } = useOutletContext<DashboardOutletContext>()
 
-  const included = useMemo(
+  const offers = useMemo(
     () => [
-      "Accès aux ressources Branddeo",
-      "Livraison 48h ouvré",
-      "Support prioritaire",
-      "Rétroplanning et suivi",
-      "Réduction sur vos prochains projets",
+      {
+        hours: 1,
+        ttc: 120,
+        ht: 100,
+        popular: false,
+        features:
+          lang === "fr"
+            ? [
+                "1 heure de tournage au studio",
+                "Personnalisation à l'infini de votre espace de tournage",
+                "Pré-montage (vidéo pouvant être publiée)",
+                "Accompagnement sur place pour une session fluide",
+                "Matériel audiovisuel de pointe (Caméra Sony, Micro Shure, etc)",
+                "Livraison dès la fin du tournage",
+              ]
+            : [
+                "1 hour shooting in the studio",
+                "Unlimited set customization",
+                "Pre-edit (ready to publish)",
+                "On-site assistance for a smooth session",
+                "Pro gear (Sony camera, Shure mic, etc.)",
+                "Delivery right after shooting",
+              ],
+      },
+      {
+        hours: 2,
+        ttc: 228,
+        ht: 190,
+        popular: true,
+        features:
+          lang === "fr"
+            ? [
+                "2 heures de tournage au studio",
+                "Personnalisation à l'infini de votre espace de tournage",
+                "Pré-montage (vidéo pouvant être publiée)",
+                "Accompagnement sur place pour une session fluide",
+                "Possibilité de produire un ou plusieurs contenus selon ton organisation",
+                "Matériel audiovisuel de pointe (Caméra Sony, Micro Shure, etc)",
+                "Livraison dès la fin du tournage",
+              ]
+            : [
+                "2 hours shooting in the studio",
+                "Unlimited set customization",
+                "Pre-edit (ready to publish)",
+                "On-site assistance for a smooth session",
+                "Produce one or multiple pieces depending on your workflow",
+                "Pro gear (Sony camera, Shure mic, etc.)",
+                "Delivery right after shooting",
+              ],
+      },
+      {
+        hours: 3,
+        ttc: 324,
+        ht: 270,
+        popular: false,
+        features:
+          lang === "fr"
+            ? [
+                "3 heures de tournage au studio",
+                "Personnalisation à l'infini de votre espace de tournage",
+                "Pré-montage (vidéo pouvant être publiée)",
+                "Accompagnement sur place pour une session fluide",
+                "Possibilité de produire un ou plusieurs contenus selon ton organisation",
+                "Matériel audiovisuel de pointe (Caméra Sony, Micro Shure, etc)",
+                "Livraison dès la fin du tournage",
+              ]
+            : [
+                "3 hours shooting in the studio",
+                "Unlimited set customization",
+                "Pre-edit (ready to publish)",
+                "On-site assistance for a smooth session",
+                "Produce one or multiple pieces depending on your workflow",
+                "Pro gear (Sony camera, Shure mic, etc.)",
+                "Delivery right after shooting",
+              ],
+      },
     ],
-    []
+    [lang]
+  )
+
+  const cloudIncluded = useMemo(
+    () => [
+      lang === "fr" ? "100 Go de stockage" : "100 GB storage",
+      lang === "fr" ? "Prévisualisation des vidéos" : "Video preview",
+      lang === "fr" ? "Conservation au-delà de 7 jours" : "Retention beyond 7 days",
+      lang === "fr" ? "Accès multi-appareils" : "Multi-device access",
+      lang === "fr" ? "Téléchargements rapides" : "Fast downloads",
+    ],
+    [lang]
   )
 
   return (
@@ -62,86 +139,75 @@ export default function SubscriptionPage() {
         </h1>
         <p className="text-sm text-muted-foreground">
           {lang === "fr"
-            ? "Crédits, Branddeo Cloud et moyens de paiement."
-            : "Credits, Branddeo Cloud and payment methods."}
+            ? "Choisissez votre durée de tournage et vos options."
+            : "Choose your shooting duration and options."}
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="text-sm font-semibold">
-          {lang === "fr" ? "Crédits" : "Credits"}
+          {lang === "fr" ? "Tournage" : "Shooting"}
         </div>
-        <Card>
-          <CardContent className="space-y-5 py-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-1">
-                <div className="text-sm font-semibold">
-                  {lang === "fr" ? "Solde de crédits" : "Credit balance"}
+        <div className="grid gap-4 lg:grid-cols-3">
+          {offers.map((offer) => (
+            <Card
+              key={offer.hours}
+              className={offer.popular ? "rounded-3xl border-primary/40" : "rounded-3xl"}
+            >
+              <CardHeader className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className="text-base">
+                    {lang === "fr"
+                      ? `Tournage ${offer.hours}h`
+                      : `${offer.hours}h shooting`}
+                  </CardTitle>
+                  {offer.popular ? (
+                    <Badge className="rounded-full" variant="secondary">
+                      {lang === "fr" ? "Populaire" : "Popular"}
+                    </Badge>
+                  ) : null}
                 </div>
-                <div className="text-4xl font-semibold tabular-nums">
-                  {data.credits}
+                <CardDescription className="flex items-baseline gap-2">
+                  <span className="text-3xl font-semibold text-foreground tabular-nums">
+                    {formatMoney(offer.ttc, lang)}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {lang === "fr" ? "TTC" : "VAT incl."}
+                  </span>
+                </CardDescription>
+                <div className="text-sm text-muted-foreground tabular-nums">
+                  {formatMoney(offer.ht, lang)} {lang === "fr" ? "HT" : "VAT excl."}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {lang === "fr"
-                    ? "Les crédits ne sont pas mensuels : ils restent sur votre compte."
-                    : "Credits are not monthly: they stay on your account."}
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                className="rounded-full"
-                onClick={() => navigate("/profil?tab=billing")}
-              >
-                <CreditCard className="size-4" />
-                {lang === "fr" ? "Moyens de paiement" : "Payment methods"}
-              </Button>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <div className="font-semibold">
-                  {lang === "fr" ? "Acheter des crédits" : "Buy credits"}
-                </div>
-                <div className="text-muted-foreground tabular-nums">
-                  {creditPack} {lang === "fr" ? "crédits" : "credits"}
-                </div>
-              </div>
-              <Slider
-                min={100}
-                max={2000}
-                step={100}
-                value={[creditPack]}
-                onValueChange={(v) => setCreditPack(v[0] ?? 500)}
-              />
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-xs text-muted-foreground">
-                  {lang === "fr"
-                    ? "Montant indicatif (mock) : interface UX, pas de traitement de paiement côté backend."
-                    : "Indicative amount (mock): UX only, no payment processing on the backend."}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  {offer.features.map((f) => (
+                    <div key={f} className="flex items-start gap-2 text-sm">
+                      <div className="mt-0.5 flex size-5 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <BadgeCheck className="size-3.5" />
+                      </div>
+                      <div className="text-muted-foreground">{f}</div>
+                    </div>
+                  ))}
                 </div>
                 <Button
-                  className="rounded-full"
-                  size="sm"
+                  className="w-full rounded-full"
                   type="button"
-                  onClick={() => actions.addCredits(creditPack)}
+                  onClick={() =>
+                    navigate(`/reservations?intent=book&duration=${offer.hours * 60}`)
+                  }
                 >
-                  <Coins className="size-4" />
-                  {lang === "fr" ? "Ajouter au solde" : "Add to balance"}
+                  <Sparkles className="size-4" />
+                  {lang === "fr" ? "Réserver" : "Book"}
                 </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-4">
-        <div className="text-sm font-semibold">
-          "Branddeo Cloud"
-        </div>
+        <div className="text-sm font-semibold">Branddeo Cloud</div>
         <Card>
           <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -170,7 +236,7 @@ export default function SubscriptionPage() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="space-y-1">
                     <div className="text-sm font-semibold">
-                      {lang === "fr" ? "Cloud (mock)" : "Cloud (mock)"}
+                      {lang === "fr" ? "Cloud" : "Cloud"}
                     </div>
                     <div className="flex items-baseline gap-2">
                       <div className="text-4xl font-semibold tabular-nums">
@@ -193,10 +259,10 @@ export default function SubscriptionPage() {
                     {lang === "fr" ? "Inclus" : "Included"}
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2">
-                    {included.map((item) => (
+                    {cloudIncluded.map((item) => (
                       <div key={item} className="flex items-start gap-2 text-sm">
                         <div className="mt-0.5 flex size-5 items-center justify-center rounded-full bg-primary/10 text-primary">
-                          <Check className="size-3.5" />
+                          <BadgeCheck className="size-3.5" />
                         </div>
                         <div className="text-muted-foreground">{item}</div>
                       </div>

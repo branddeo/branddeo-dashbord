@@ -6,13 +6,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 type DashboardOutletContext = {
   lang: "fr" | "en"
@@ -41,32 +34,28 @@ export default function RushesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [date, setDate] = useState<string>(searchParams.get("date") ?? "")
-  const [studio, setStudio] = useState<string>(searchParams.get("studio") ?? "all")
   const [q, setQ] = useState<string>(searchParams.get("q") ?? "")
 
   const rows = useMemo(() => {
     const query = q.trim().toLowerCase()
     return data.rushes.filter((r) => {
-      const matchesStudio = studio === "all" ? true : r.studioId === studio
       const matchesDate = date ? r.date.slice(0, 10) === date : true
       const matchesQuery = query
         ? `${r.title} ${r.studio} ${r.status}`.toLowerCase().includes(query)
         : true
-      return matchesStudio && matchesDate && matchesQuery
+      return matchesDate && matchesQuery
     })
-  }, [data.rushes, date, q, studio])
+  }, [data.rushes, date, q])
 
   const applyFilters = () => {
     const next = new URLSearchParams()
     if (date) next.set("date", date)
-    if (studio && studio !== "all") next.set("studio", studio)
     if (q.trim()) next.set("q", q.trim())
     setSearchParams(next, { replace: true })
   }
 
   const resetFilters = () => {
     setDate("")
-    setStudio("all")
     setQ("")
     setSearchParams({}, { replace: true })
   }
@@ -104,7 +93,7 @@ export default function RushesPage() {
         </Card>
       ) : null}
 
-      <div className="grid gap-3 md:grid-cols-[220px_220px_1fr]">
+      <div className="grid gap-3 md:grid-cols-[220px_1fr]">
         <div className="relative">
           <Input
             type="date"
@@ -117,19 +106,6 @@ export default function RushesPage() {
             <Calendar className="size-4" />
           </div>
         </div>
-
-        <Select value={studio} onValueChange={setStudio}>
-          <SelectTrigger className="h-9">
-            <SelectValue placeholder={lang === "fr" ? "Tous les studios" : "All studios"} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">
-              {lang === "fr" ? "Tous les studios" : "All studios"}
-            </SelectItem>
-            <SelectItem value="paris">Paris</SelectItem>
-            <SelectItem value="lyon">Lyon</SelectItem>
-          </SelectContent>
-        </Select>
 
         <div className="relative">
           <Input
