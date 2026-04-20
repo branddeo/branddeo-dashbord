@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import {
   ArrowLeft,
   Calendar as CalendarIcon,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock3,
@@ -283,7 +284,7 @@ export default function BookSessionPage() {
     : 2
   const initialReminder = reminderFromQuery ? moment(reminderFromQuery) : null
 
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(() => {
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(() => {
     if (dateFromQuery || timeFromQuery || customizationFromQuery || reminderFromQuery) return 4
     if (durationFromQuery) return 2
     return 1
@@ -339,6 +340,9 @@ export default function BookSessionPage() {
     [lang]
   )
   const [selectedUpsellIds, setSelectedUpsellIds] = useState<string[]>([])
+  const [createdReservationId, setCreatedReservationId] = useState<string | null>(
+    null
+  )
 
   const computedOffer = useMemo(() => {
     if (hours === 1) {
@@ -440,8 +444,10 @@ export default function BookSessionPage() {
       offer: computedOffer,
     }
 
-    writeJson("branddeo.reservations", [{ id: `res_${next}`, ...payload }, ...reservations])
-    navigate("/reservations", { replace: true })
+    const id = `res_${next}`
+    writeJson("branddeo.reservations", [{ id, ...payload }, ...reservations])
+    setCreatedReservationId(id)
+    setStep(5)
   }
 
   const canContinue = useMemo(() => {
@@ -507,17 +513,19 @@ export default function BookSessionPage() {
 
       <main className="mx-auto grid w-full max-w-[1480px] gap-8 px-4 py-8 md:px-6 lg:grid-cols-[1fr_460px] lg:gap-12">
         <div className="space-y-8">
-          <div className="space-y-2">
-            <div className="text-xs font-semibold text-muted-foreground">
-              {lang === "fr" ? `Étape ${step}/4` : `Step ${step}/4`}
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-muted-foreground">
+                {lang === "fr"
+                  ? `Étape ${Math.min(step, 4)}/4`
+                  : `Step ${Math.min(step, 4)}/4`}
+              </div>
+              <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-[width]"
+                  style={{ width: `${(Math.min(step, 4) / 4) * 100}%` }}
+                />
+              </div>
             </div>
-            <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary transition-[width]"
-                style={{ width: `${(step / 4) * 100}%` }}
-              />
-            </div>
-          </div>
 
           {step === 1 ? (
             <div className="space-y-6">
@@ -818,6 +826,99 @@ export default function BookSessionPage() {
                   onClick={createReservation}
                 >
                   {lang === "fr" ? "Confirmer" : "Confirm"}
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
+          {step === 5 ? (
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <CheckCircle2 className="size-6" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-semibold tracking-tight">
+                      {lang === "fr" ? "Réservation confirmée" : "Booking confirmed"}
+                    </h1>
+                    <div className="text-sm text-muted-foreground">
+                      {lang === "fr"
+                        ? "Votre demande a bien été enregistrée. Notre équipe prépare votre session."
+                        : "Your request has been saved. Our team will prepare your session."}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border bg-muted/10 px-5 py-5">
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <div className="text-muted-foreground">{lang === "fr" ? "Référence" : "Reference"}</div>
+                    <div className="font-semibold">{createdReservationId ?? "—"}</div>
+                  </div>
+                  <div className="mt-3 grid gap-2 text-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-muted-foreground">{lang === "fr" ? "Date" : "Date"}</div>
+                      <div className="font-semibold">
+                        {startMoment
+                          ? startMoment.format(lang === "fr" ? "DD MMM. YYYY" : "MMM D, YYYY")
+                          : "—"}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-muted-foreground">{lang === "fr" ? "Heure" : "Time"}</div>
+                      <div className="font-semibold tabular-nums">
+                        {startMoment && endMoment
+                          ? `${startMoment.format("HH:mm")} - ${endMoment.format("HH:mm")}`
+                          : "—"}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-muted-foreground">{lang === "fr" ? "Durée" : "Duration"}</div>
+                      <div className="font-semibold tabular-nums">{hours}h</div>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-muted-foreground">{lang === "fr" ? "Studio" : "Studio"}</div>
+                      <div className="font-semibold">Studio Branddeo</div>
+                    </div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="text-muted-foreground">
+                        {lang === "fr" ? "Personnalisation" : "Customization"}
+                      </div>
+                      <div className="max-w-[260px] text-right font-semibold">
+                        {studioCustomization.trim() ? studioCustomization.trim() : "—"}
+                      </div>
+                    </div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="text-muted-foreground">{lang === "fr" ? "Rappel" : "Callback"}</div>
+                      <div className="max-w-[260px] text-right font-semibold">
+                        {reminderEnabled
+                          ? moment(`${reminderDate}T${reminderTime}:00`).format(
+                              lang === "fr" ? "DD/MM/YYYY [à] HH:mm" : "MMM D, YYYY [at] h:mm A"
+                            )
+                          : lang === "fr"
+                            ? "Non"
+                            : "No"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <Button
+                  variant="outline"
+                  className="h-12 rounded-3xl px-8"
+                  type="button"
+                  onClick={() => navigate("/reservations", { replace: true })}
+                >
+                  {lang === "fr" ? "Voir mes réservations" : "View bookings"}
+                </Button>
+                <Button
+                  className="h-12 rounded-3xl px-8"
+                  type="button"
+                  onClick={() => window.location.assign("/reservations/book")}
+                >
+                  {lang === "fr" ? "Nouvelle session" : "New session"}
                 </Button>
               </div>
             </div>
