@@ -18,9 +18,7 @@ export default function RegisterPage() {
     e.preventDefault()
     setStatus("sent")
     setTimeout(() => {
-      navigate("/auth/confirm-email?email=" + encodeURIComponent(email), {
-        replace: true,
-      })
+      navigate("/reservations/book", { replace: true })
     }, 400)
   }
 
@@ -113,4 +111,3 @@ export default function RegisterPage() {
     </Card>
   )
 }
-

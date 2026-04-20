@@ -16,7 +16,7 @@ export default function LoginPage() {
     e.preventDefault()
     setStatus("success")
     setTimeout(() => {
-      navigate("/", { replace: true })
+      navigate("/reservations/book", { replace: true })
     }, 400)
   }
 
@@ -97,4 +97,3 @@ export default function LoginPage() {
     </Card>
   )
 }
-

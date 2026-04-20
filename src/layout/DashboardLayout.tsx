@@ -661,7 +661,7 @@ export default function DashboardLayout() {
         start: "2026-04-10T10:00:00.000Z",
         end: "2026-04-10T11:30:00.000Z",
         status: "confirmed",
-        studioCustomization: "Casablanca",
+        studioCustomization: "Décor Branddeo · Ambiance chaleureuse",
         reminder: { enabled: true, datetime: "2026-04-09T09:00:00.000Z" },
         offer: {
           hours: 2,
@@ -687,7 +687,7 @@ export default function DashboardLayout() {
         start: "2026-04-14T14:00:00.000Z",
         end: "2026-04-14T15:00:00.000Z",
         status: "pending",
-        studioCustomization: "Minimal beige",
+        studioCustomization: "Décor Branddeo · Minimal beige",
         reminder: { enabled: false },
         offer: {
           hours: 1,
@@ -711,7 +711,7 @@ export default function DashboardLayout() {
         start: "2026-04-22T09:00:00.000Z",
         end: "2026-04-22T10:00:00.000Z",
         status: "cancelled",
-        studioCustomization: "Noir & néon",
+        studioCustomization: "Décor Branddeo · Noir & néon",
         reminder: { enabled: false },
         offer: {
           hours: 3,

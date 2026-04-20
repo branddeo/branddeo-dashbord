@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   ArrowLeft,
   Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   LogOut,
   Users,
@@ -20,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 
 type Lang = "fr" | "en"
 
@@ -53,6 +56,187 @@ function getTodayYmd() {
 function clampDurationMinutes(value: number) {
   if (!Number.isFinite(value) || value <= 0) return 90
   return Math.min(240, Math.max(30, value))
+}
+
+function parseYmd(value: string) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!m) return null
+  const year = Number(m[1])
+  const month = Number(m[2]) - 1
+  const day = Number(m[3])
+  const d = new Date(year, month, day)
+  if (Number.isNaN(d.getTime())) return null
+  return d
+}
+
+function toYmd(date: Date) {
+  const yyyy = String(date.getFullYear())
+  const mm = String(date.getMonth() + 1).padStart(2, "0")
+  const dd = String(date.getDate()).padStart(2, "0")
+  return `${yyyy}-${mm}-${dd}`
+}
+
+function addMonths(date: Date, delta: number) {
+  const d = new Date(date)
+  d.setMonth(d.getMonth() + delta)
+  d.setDate(1)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
+}
+
+function daysInMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+}
+
+function getWeekStartIndex(date: Date, lang: Lang) {
+  const jsDay = date.getDay()
+  const mondayFirst = lang === "fr"
+  return mondayFirst ? (jsDay + 6) % 7 : jsDay
+}
+
+function CalendarPicker({
+  value,
+  onChange,
+  lang,
+  label,
+}: {
+  value: string
+  onChange: (nextYmd: string) => void
+  lang: Lang
+  label?: string
+}) {
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const [open, setOpen] = useState(false)
+  const [viewMonth, setViewMonth] = useState<Date>(() => {
+    const parsed = parseYmd(value)
+    return parsed ? startOfMonth(parsed) : startOfMonth(new Date())
+  })
+
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node | null
+      if (!target) return
+      if (!rootRef.current?.contains(target)) setOpen(false)
+    }
+    window.addEventListener("pointerdown", onPointerDown)
+    return () => window.removeEventListener("pointerdown", onPointerDown)
+  }, [open])
+
+  const selected = parseYmd(value)
+  const monthLabel = moment(viewMonth).format(lang === "fr" ? "MMMM YYYY" : "MMMM YYYY")
+
+  const weekdayLabels =
+    lang === "fr"
+      ? ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
+      : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+  const first = startOfMonth(viewMonth)
+  const offset = getWeekStartIndex(first, lang)
+  const totalDays = daysInMonth(viewMonth)
+
+  const cells: Array<Date | null> = []
+  for (let i = 0; i < offset; i += 1) cells.push(null)
+  for (let day = 1; day <= totalDays; day += 1) {
+    cells.push(new Date(viewMonth.getFullYear(), viewMonth.getMonth(), day))
+  }
+
+  while (cells.length % 7 !== 0) cells.push(null)
+  while (cells.length < 42) cells.push(null)
+
+  return (
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        className={cn(
+          "flex h-12 w-full items-center justify-between gap-3 rounded-3xl border bg-background px-4 text-left text-sm shadow-xs transition-colors",
+          "hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        )}
+        onClick={() => {
+          if (!open) {
+            const parsed = parseYmd(value)
+            setViewMonth(startOfMonth(parsed ?? new Date()))
+          }
+          setOpen((v) => !v)
+        }}
+      >
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <CalendarIcon className="size-4" />
+          {label ?? (lang === "fr" ? "Sélectionner une date" : "Pick a date")}
+        </div>
+        <div className="font-semibold text-foreground">
+          {selected
+            ? moment(selected).format(lang === "fr" ? "DD MMM. YYYY" : "MMM D, YYYY")
+            : "—"}
+        </div>
+      </button>
+
+      {open ? (
+        <div className="absolute left-0 top-[54px] z-50 w-[320px] rounded-3xl border bg-background p-4 shadow-lg">
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              type="button"
+              className="size-9 rounded-full"
+              onClick={() => setViewMonth((d) => addMonths(d, -1))}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <div className="text-sm font-semibold capitalize">{monthLabel}</div>
+            <Button
+              variant="outline"
+              size="icon"
+              type="button"
+              className="size-9 rounded-full"
+              onClick={() => setViewMonth((d) => addMonths(d, 1))}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+
+          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs font-semibold text-muted-foreground">
+            {weekdayLabels.map((w) => (
+              <div key={w} className="py-1">
+                {w}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-1 grid grid-cols-7 gap-1">
+            {cells.map((cell, idx) => {
+              if (!cell) return <div key={idx} className="h-10" />
+              const ymd = toYmd(cell)
+              const isSelected = ymd === value
+              return (
+                <button
+                  key={ymd}
+                  type="button"
+                  className={cn(
+                    "h-10 rounded-2xl text-sm font-semibold transition-colors",
+                    "hover:bg-muted/40",
+                    isSelected
+                      ? "bg-primary text-primary-foreground hover:bg-primary"
+                      : "bg-transparent text-foreground"
+                  )}
+                  onClick={() => {
+                    onChange(ymd)
+                    setOpen(false)
+                  }}
+                >
+                  {cell.getDate()}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
 }
 
 function readJson<T>(key: string, fallback: T): T {
@@ -271,6 +455,11 @@ export default function BookSessionPage() {
     return true
   }, [bookDate, bookTime, reminderDate, reminderEnabled, reminderTime, step, studioCustomization])
 
+  const timeSlots = useMemo(
+    () => ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00", "18:00"],
+    []
+  )
+
   return (
     <div className="min-h-svh bg-background">
       <header className="border-b">
@@ -347,8 +536,13 @@ export default function BookSessionPage() {
                     <Button
                       key={n}
                       type="button"
-                      variant={peopleCount === n ? "default" : "outline"}
-                      className="h-12 rounded-3xl"
+                      variant="outline"
+                      className={cn(
+                        "h-12 rounded-3xl border bg-background text-foreground",
+                        peopleCount === n
+                          ? "border-primary bg-primary/10 text-primary hover:bg-primary/10"
+                          : "hover:bg-muted/30"
+                      )}
                       onClick={() => setPeopleCount(n)}
                     >
                       {n}
@@ -366,8 +560,13 @@ export default function BookSessionPage() {
                     <Button
                       key={h}
                       type="button"
-                      variant={hours === h ? "default" : "outline"}
-                      className="h-12 rounded-3xl"
+                      variant="outline"
+                      className={cn(
+                        "h-12 rounded-3xl border bg-background text-foreground",
+                        hours === h
+                          ? "border-primary bg-primary/10 text-primary hover:bg-primary/10"
+                          : "hover:bg-muted/30"
+                      )}
                       onClick={() => setHours(h)}
                     >
                       {h}h
@@ -397,23 +596,43 @@ export default function BookSessionPage() {
                   <div className="text-sm font-semibold">
                     {lang === "fr" ? "Sélectionnez une date" : "Select a date"}
                   </div>
-                  <Input
-                    type="date"
-                    value={bookDate}
-                    onChange={(e) => setBookDate(e.target.value)}
-                    className="h-12 rounded-3xl"
-                  />
+                  <CalendarPicker value={bookDate} onChange={setBookDate} lang={lang} />
                 </div>
                 <div className="space-y-2">
                   <div className="text-sm font-semibold">
                     {lang === "fr" ? "Sélectionnez une heure" : "Select a time"}
                   </div>
-                  <Input
-                    type="time"
-                    value={bookTime}
-                    onChange={(e) => setBookTime(e.target.value)}
-                    className="h-12 rounded-3xl"
-                  />
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                    {timeSlots.map((t) => (
+                      <Button
+                        key={t}
+                        type="button"
+                        variant="outline"
+                        className={cn(
+                          "h-11 rounded-3xl border bg-background font-semibold tabular-nums",
+                          bookTime === t
+                            ? "border-primary bg-primary/10 text-primary hover:bg-primary/10"
+                            : "hover:bg-muted/30"
+                        )}
+                        onClick={() => setBookTime(t)}
+                      >
+                        {t}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="rounded-3xl border bg-muted/10 px-4 py-4">
+                    <div className="text-sm font-semibold">
+                      {lang === "fr" ? "Autre heure" : "Other time"}
+                    </div>
+                    <div className="mt-2">
+                      <Input
+                        type="time"
+                        value={bookTime}
+                        onChange={(e) => setBookTime(e.target.value)}
+                        className="h-12 rounded-3xl bg-background"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -458,7 +677,11 @@ export default function BookSessionPage() {
                   value={studioCustomization}
                   onChange={(e) => setStudioCustomization(e.target.value)}
                   className="h-12 rounded-3xl"
-                  placeholder={lang === "fr" ? "Ex : Casablanca, minimal beige…" : "E.g. Casablanca, minimal beige…"}
+                  placeholder={
+                    lang === "fr"
+                      ? "Ex : Décor Branddeo minimal beige, Branddeo néon…"
+                      : "E.g. Branddeo minimal beige, Branddeo neon…"
+                  }
                 />
                 <div className="text-xs text-muted-foreground">
                   {lang === "fr"
@@ -485,11 +708,11 @@ export default function BookSessionPage() {
                 </div>
                 {reminderEnabled ? (
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <Input
-                      type="date"
+                    <CalendarPicker
                       value={reminderDate}
-                      onChange={(e) => setReminderDate(e.target.value)}
-                      className="h-12 rounded-3xl"
+                      onChange={setReminderDate}
+                      lang={lang}
+                      label={lang === "fr" ? "Date du rappel" : "Reminder date"}
                     />
                     <Input
                       type="time"
@@ -539,32 +762,41 @@ export default function BookSessionPage() {
                 {upsells.map((u) => {
                   const selected = selectedUpsellIds.includes(u.id)
                   return (
-                    <div key={u.id} className="rounded-3xl border px-5 py-5">
+                    <div
+                      key={u.id}
+                      className={cn(
+                        "rounded-3xl border px-5 py-5 transition-colors",
+                        selected ? "border-primary bg-primary/5" : "bg-background"
+                      )}
+                    >
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 space-y-1">
                           <div className="text-sm font-semibold">{u.title}</div>
                           <div className="text-sm text-muted-foreground">{u.description}</div>
-                          <div className="pt-1 text-sm font-semibold tabular-nums">{u.ttc.toFixed(2)} €</div>
                         </div>
-                        <Button
-                          type="button"
-                          className="rounded-3xl"
-                          variant={selected ? "secondary" : "outline"}
-                          onClick={() =>
-                            setSelectedUpsellIds((prev) =>
-                              prev.includes(u.id) ? prev.filter((id) => id !== u.id) : [...prev, u.id]
-                            )
-                          }
-                        >
-                          {lang === "fr"
-                            ? selected
-                              ? "Ajouté"
-                              : "Ajouter"
-                            : selected
-                              ? "Added"
-                              : "Add"}
-                        </Button>
+                        <div className="shrink-0 text-sm font-semibold tabular-nums">
+                          {u.ttc.toFixed(2)} €
+                        </div>
                       </div>
+
+                      <Button
+                        type="button"
+                        className="mt-4 h-11 w-full rounded-3xl"
+                        variant={selected ? "secondary" : "outline"}
+                        onClick={() =>
+                          setSelectedUpsellIds((prev) =>
+                            prev.includes(u.id) ? prev.filter((id) => id !== u.id) : [...prev, u.id]
+                          )
+                        }
+                      >
+                        {lang === "fr"
+                          ? selected
+                            ? "Retirer"
+                            : "Ajouter à ma réservation"
+                          : selected
+                            ? "Remove"
+                            : "Add to booking"}
+                      </Button>
                     </div>
                   )
                 })}
@@ -638,6 +870,13 @@ export default function BookSessionPage() {
 
                   <div className="flex items-start justify-between gap-3">
                     <div className="text-muted-foreground">{lang === "fr" ? "Studio" : "Studio"}</div>
+                    <div className="max-w-[240px] text-right font-semibold">Studio Branddeo</div>
+                  </div>
+
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="text-muted-foreground">
+                      {lang === "fr" ? "Personnalisation" : "Customization"}
+                    </div>
                     <div className="max-w-[240px] text-right font-semibold">
                       {studioCustomization.trim() ? studioCustomization.trim() : "—"}
                     </div>
