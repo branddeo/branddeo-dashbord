@@ -72,6 +72,19 @@ type Reservation = {
   start: string
   end: string
   status: "confirmed" | "pending" | "cancelled"
+  studioCustomization?: string
+  reminder?: {
+    enabled: boolean
+    datetime?: string
+  }
+  offer?: {
+    hours: 1 | 2 | 3
+    label: string
+    ttc: number
+    ht: number
+    popular?: boolean
+    includes: string[]
+  }
 }
 
 type RushItem = {
@@ -648,6 +661,24 @@ export default function DashboardLayout() {
         start: "2026-04-10T10:00:00.000Z",
         end: "2026-04-10T11:30:00.000Z",
         status: "confirmed",
+        studioCustomization: "Casablanca",
+        reminder: { enabled: true, datetime: "2026-04-09T09:00:00.000Z" },
+        offer: {
+          hours: 2,
+          label: "Tournage 2h",
+          ttc: 228,
+          ht: 190,
+          popular: true,
+          includes: [
+            "2 heures de tournage au studio",
+            "Personnalisation à l'infini de votre espace de tournage",
+            "Pré-montage (vidéo pouvant être publiée)",
+            "Accompagnement sur place pour une session fluide",
+            "Possibilité de produire un ou plusieurs contenus selon ton organisation",
+            "Matériel audiovisuel de pointe (Caméra Sony, Micro Shure, etc)",
+            "Livraison dès la fin du tournage",
+          ],
+        },
       },
       {
         id: "res_02",
@@ -656,6 +687,22 @@ export default function DashboardLayout() {
         start: "2026-04-14T14:00:00.000Z",
         end: "2026-04-14T15:00:00.000Z",
         status: "pending",
+        studioCustomization: "Minimal beige",
+        reminder: { enabled: false },
+        offer: {
+          hours: 1,
+          label: "Tournage 1h",
+          ttc: 120,
+          ht: 100,
+          includes: [
+            "1 heure de tournage au studio",
+            "Personnalisation à l'infini de votre espace de tournage",
+            "Pré-montage (vidéo pouvant être publiée)",
+            "Accompagnement sur place pour une session fluide",
+            "Matériel audiovisuel de pointe (Caméra Sony, Micro Shure, etc)",
+            "Livraison dès la fin du tournage",
+          ],
+        },
       },
       {
         id: "res_03",
@@ -664,6 +711,23 @@ export default function DashboardLayout() {
         start: "2026-04-22T09:00:00.000Z",
         end: "2026-04-22T10:00:00.000Z",
         status: "cancelled",
+        studioCustomization: "Noir & néon",
+        reminder: { enabled: false },
+        offer: {
+          hours: 3,
+          label: "Tournage 3h",
+          ttc: 324,
+          ht: 270,
+          includes: [
+            "3 heures de tournage au studio",
+            "Personnalisation à l'infini de votre espace de tournage",
+            "Pré-montage (vidéo pouvant être publiée)",
+            "Accompagnement sur place pour une session fluide",
+            "Possibilité de produire un ou plusieurs contenus selon ton organisation",
+            "Matériel audiovisuel de pointe (Caméra Sony, Micro Shure, etc)",
+            "Livraison dès la fin du tournage",
+          ],
+        },
       },
     ]
   )
@@ -859,7 +923,7 @@ export default function DashboardLayout() {
                       size="sm"
                       type="button"
                       className="rounded-full"
-                      onClick={() => navigate("/reservations?intent=book")}
+                      onClick={() => navigate("/reservations/book")}
                     >
                       <span className="hidden sm:inline">{t.topbar.bookSession}</span>
                       <span className="sm:hidden">{lang === "fr" ? "Réserver" : "Book"}</span>
@@ -964,7 +1028,7 @@ export default function DashboardLayout() {
             <CommandGroup heading={t.search.actions}>
               <CommandItem
                 value={`action ${t.topbar.bookSession}`}
-                onSelect={() => go("/reservations?intent=book")}
+                onSelect={() => go("/reservations/book")}
               >
                 <Calendar className="size-4" />
                 {t.topbar.bookSession}
@@ -1084,8 +1148,8 @@ function BranddeoAi({
 
     if (mentionsBook) {
       return lang === "fr"
-        ? "Pour réserver : ouvre “Réservations” puis clique “Réserver une session”. Choisis une date, une heure et une durée, puis crée la session."
-        : "To book: open “Bookings” then click “Book a session”. Pick a date, time and duration, then create the session."
+        ? "Pour réserver : clique “Réserver une session” (bouton en haut). Choisis une date, une heure et une durée, puis crée la session."
+        : "To book: click “Book a session” (top button). Pick a date, time and duration, then create the session."
     }
 
     if (mentionsCloud) {
