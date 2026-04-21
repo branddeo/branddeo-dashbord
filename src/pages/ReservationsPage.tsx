@@ -12,14 +12,12 @@ import moment from "moment"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet"
 
 type DashboardOutletContext = {
@@ -28,11 +26,14 @@ type DashboardOutletContext = {
     reservations: Array<{
       id: string
       studio: string
+      studioId: string
       start: string
       end: string
       status: "confirmed" | "pending" | "cancelled"
+      studioCustomization?: string
+      reminder?: { enabled: boolean; datetime?: string }
       offer?: {
-        label: "Tournage 1h" | "Tournage 2h" | "Tournage 3h"
+        label: string
         ttc: number
         ht: number
         hours: 1 | 2 | 3
@@ -40,15 +41,6 @@ type DashboardOutletContext = {
         includes: string[]
       }
     }>
-  }
-  actions: {
-    addReservation: (payload: {
-      studio: string
-      studioId: string
-      start: string
-      end: string
-      status: "confirmed" | "pending" | "cancelled"
-    }) => void
   }
 }
 
@@ -64,14 +56,6 @@ type CalendarEvent = {
 }
 
 const localizer = momentLocalizer(moment)
-
-function getTodayYmd() {
-  const today = new Date()
-  const yyyy = String(today.getFullYear())
-  const mm = String(today.getMonth() + 1).padStart(2, "0")
-  const dd = String(today.getDate()).padStart(2, "0")
-  return `${yyyy}-${mm}-${dd}`
-}
 
 function CalendarToolbar({
   label,
@@ -118,7 +102,7 @@ function CalendarToolbar({
 
 export default function ReservationsPage() {
   const navigate = useNavigate()
-  const { lang, data, actions } = useOutletContext<DashboardOutletContext>()
+  const { lang, data } = useOutletContext<DashboardOutletContext>()
   const [searchParams] = useSearchParams()
   const [calendarDate, setCalendarDate] = useState<Date>(() => new Date())
   const [detailsOpen, setDetailsOpen] = useState(false)
@@ -128,19 +112,19 @@ export default function ReservationsPage() {
   const [hideUpsells, setHideUpsells] = useState(false)
 
   const intent = searchParams.get("intent")
-  const durationFromQuery = Number(searchParams.get("duration") ?? "")
-  const initialDuration =
-    Number.isFinite(durationFromQuery) && durationFromQuery > 0
-      ? Math.min(240, Math.max(30, durationFromQuery))
-      : 90
-  const [bookOpen, setBookOpen] = useState(intent === "book")
-  const [bookDate, setBookDate] = useState<string>(() => getTodayYmd())
-  const [bookTime, setBookTime] = useState<string>("10:00")
-  const [durationMinutes, setDurationMinutes] = useState<number>(initialDuration)
+  const durationParam = searchParams.get("duration")
 
   useEffect(() => {
     moment.locale(lang === "fr" ? "fr" : "en-gb")
   }, [lang])
+
+  useEffect(() => {
+    if (intent !== "book") return
+    const params = new URLSearchParams()
+    if (durationParam) params.set("duration", durationParam)
+    const qs = params.toString()
+    navigate(`/reservations/book${qs ? `?${qs}` : ""}`, { replace: true })
+  }, [durationParam, intent, navigate])
 
   const selectedReservation = useMemo(() => {
     if (!selectedReservationId) return null
@@ -221,21 +205,6 @@ export default function ReservationsPage() {
     [data.reservations, lang]
   )
 
-  const createReservation = () => {
-    if (!bookDate || !bookTime) return
-    const startLocal = new Date(`${bookDate}T${bookTime}:00`)
-    const endLocal = new Date(startLocal.getTime() + durationMinutes * 60000)
-    actions.addReservation({
-      studio: "Studio Branddeo",
-      studioId: "branddeo",
-      start: startLocal.toISOString(),
-      end: endLocal.toISOString(),
-      status: "pending",
-    })
-    setBookOpen(false)
-    navigate("/reservations", { replace: true })
-  }
-
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
       <div className="space-y-1">
@@ -250,104 +219,15 @@ export default function ReservationsPage() {
                 : "Manage your sessions and history."}
             </p>
           </div>
-          <Sheet open={bookOpen} onOpenChange={setBookOpen}>
-            <SheetTrigger asChild>
-              <Button className="rounded-full" type="button">
-                {lang === "fr" ? "Réserver une session" : "Book a session"}
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[420px] p-0">
-              <SheetHeader className="border-b px-6 py-5">
-                <SheetTitle>
-                  {lang === "fr" ? "Nouvelle session" : "New session"}
-                </SheetTitle>
-              </SheetHeader>
-              <div className="px-6 py-5 space-y-4">
-                <div className="space-y-2">
-                  <div className="text-sm font-semibold">
-                    {lang === "fr" ? "Date" : "Date"}
-                  </div>
-                  <Input
-                    type="date"
-                    value={bookDate}
-                    onChange={(e) => setBookDate(e.target.value)}
-                    className="h-10 rounded-3xl"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-semibold">
-                    {lang === "fr" ? "Heure" : "Time"}
-                  </div>
-                  <Input
-                    type="time"
-                    value={bookTime}
-                    onChange={(e) => setBookTime(e.target.value)}
-                    className="h-10 rounded-3xl"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-semibold">
-                    {lang === "fr" ? "Durée (minutes)" : "Duration (minutes)"}
-                  </div>
-                  <Input
-                    inputMode="numeric"
-                    value={String(durationMinutes)}
-                    onChange={(e) =>
-                      setDurationMinutes(
-                        Math.max(30, Math.min(240, Number(e.target.value || 90)))
-                      )
-                    }
-                    className="h-10 rounded-3xl"
-                  />
-                  <div className="text-xs text-muted-foreground">
-                    {lang === "fr"
-                      ? "Studio : Studio Branddeo"
-                      : "Studio: Branddeo Studio"}
-                  </div>
-                </div>
-                <div className="flex items-center justify-end gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    className="rounded-full"
-                    type="button"
-                    onClick={() => setBookOpen(false)}
-                  >
-                    {lang === "fr" ? "Annuler" : "Cancel"}
-                  </Button>
-                  <Button className="rounded-full" type="button" onClick={createReservation}>
-                    {lang === "fr" ? "Créer" : "Create"}
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+          <Button
+            className="rounded-full"
+            type="button"
+            onClick={() => navigate("/reservations/book")}
+          >
+            {lang === "fr" ? "Réserver une session" : "Book a session"}
+          </Button>
         </div>
       </div>
-
-      {intent === "book" ? (
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1">
-              <div className="text-sm font-semibold">
-                {lang === "fr" ? "Nouvelle session" : "New session"}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {lang === "fr"
-                  ? "Choisissez une date et une heure, puis validez."
-                  : "Pick a date and a time, then confirm."}
-              </div>
-            </div>
-            <Button
-              className="rounded-full"
-              size="sm"
-              type="button"
-              onClick={() => setBookOpen(true)}
-            >
-              {lang === "fr" ? "Ouvrir le formulaire" : "Open form"}
-            </Button>
-          </CardContent>
-        </Card>
-      ) : null}
 
       <Card className="rounded-3xl">
         <CardHeader className="pb-3">
@@ -481,6 +361,39 @@ export default function ReservationsPage() {
                   </div>
                 </div>
 
+                <div className="space-y-3 rounded-3xl border px-4 py-4">
+                  <div className="flex items-start justify-between gap-3 text-sm">
+                    <div className="text-muted-foreground">
+                      {lang === "fr" ? "Studio à personnaliser" : "Customized studio"}
+                    </div>
+                    <div className="max-w-[250px] text-right font-semibold">
+                      {selectedReservation.studioCustomization?.trim()
+                        ? selectedReservation.studioCustomization.trim()
+                        : "—"}
+                    </div>
+                  </div>
+                  <div className="flex items-start justify-between gap-3 text-sm">
+                    <div className="text-muted-foreground">
+                      {lang === "fr" ? "Rappel" : "Callback"}
+                    </div>
+                    <div className="max-w-[250px] text-right font-semibold">
+                      {selectedReservation.reminder?.enabled
+                        ? selectedReservation.reminder.datetime
+                          ? moment(selectedReservation.reminder.datetime).format(
+                              lang === "fr"
+                                ? "DD/MM/YYYY [à] HH:mm"
+                                : "MMM D, YYYY [at] h:mm A"
+                            )
+                          : lang === "fr"
+                            ? "Oui (à définir)"
+                            : "Yes (to be set)"
+                        : lang === "fr"
+                          ? "Non"
+                          : "No"}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="rounded-3xl border px-4 py-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="space-y-1">
@@ -604,7 +517,21 @@ export default function ReservationsPage() {
                     type="button"
                     onClick={() => {
                       setDetailsOpen(false)
-                      setBookOpen(true)
+                      if (!selectedReservation) return
+                      const start = moment(selectedReservation.start)
+                      const end = moment(selectedReservation.end)
+                      const duration = Math.min(240, Math.max(30, end.diff(start, "minutes")))
+                      const params = new URLSearchParams()
+                      params.set("date", start.format("YYYY-MM-DD"))
+                      params.set("time", start.format("HH:mm"))
+                      params.set("duration", String(duration))
+                      if (selectedReservation.studioCustomization?.trim()) {
+                        params.set("customization", selectedReservation.studioCustomization.trim())
+                      }
+                      if (selectedReservation.reminder?.enabled && selectedReservation.reminder.datetime) {
+                        params.set("reminder", selectedReservation.reminder.datetime)
+                      }
+                      navigate(`/reservations/book?${params.toString()}`)
                     }}
                   >
                     {lang === "fr" ? "Reprogrammer" : "Reschedule"}
