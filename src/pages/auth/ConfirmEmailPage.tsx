@@ -14,7 +14,7 @@ export default function ConfirmEmailPage() {
   const onConfirm = () => {
     setStatus("done")
     setTimeout(() => {
-      navigate("/auth/login", { replace: true })
+      navigate("/reservations/book", { replace: true })
     }, 500)
   }
 
@@ -68,4 +68,3 @@ export default function ConfirmEmailPage() {
     </Card>
   )
 }
-

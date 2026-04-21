@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Globe } from "lucide-react"
 import { NavLink, useNavigate } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
@@ -16,7 +17,7 @@ export default function LoginPage() {
     e.preventDefault()
     setStatus("success")
     setTimeout(() => {
-      navigate("/", { replace: true })
+      navigate("/reservations/book", { replace: true })
     }, 400)
   }
 
@@ -38,6 +39,22 @@ export default function LoginPage() {
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
+        <Button
+          variant="outline"
+          className="h-11 w-full rounded-3xl"
+          type="button"
+          onClick={() => navigate("/reservations/book", { replace: true })}
+        >
+          <Globe className="size-4" />
+          Se connecter avec Google
+        </Button>
+
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <div className="text-xs font-semibold text-muted-foreground">ou</div>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
         <form className="space-y-4" onSubmit={onSubmit}>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -97,4 +114,3 @@ export default function LoginPage() {
     </Card>
   )
 }
-

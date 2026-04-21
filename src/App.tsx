@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom"
 
 import DashboardLayout from "@/layout/DashboardLayout"
 import AnalyticsPage from "@/pages/AnalyticsPage"
+import BookSessionPage from "@/pages/BookSessionPage"
 import CloudPage from "@/pages/CloudPage"
 import HomePage from "@/pages/HomePage"
 import ProfilePage from "@/pages/ProfilePage"
@@ -18,6 +19,7 @@ import ResetPasswordPage from "@/pages/auth/ResetPasswordPage"
 export default function App() {
   return (
     <Routes>
+      <Route path="reservations/book" element={<BookSessionPage />} />
       <Route path="auth" element={<AuthLayout />}>
         <Route index element={<Navigate to="/auth/login" replace />} />
         <Route path="login" element={<LoginPage />} />

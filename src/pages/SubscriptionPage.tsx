@@ -194,7 +194,7 @@ export default function SubscriptionPage() {
                   className="w-full rounded-full"
                   type="button"
                   onClick={() =>
-                    navigate(`/reservations?intent=book&duration=${offer.hours * 60}`)
+                    navigate(`/reservations/book?duration=${offer.hours * 60}`)
                   }
                 >
                   <Sparkles className="size-4" />

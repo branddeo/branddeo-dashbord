@@ -119,7 +119,7 @@ export default function HomePage() {
               className="w-full rounded-full"
               size="sm"
               type="button"
-              onClick={() => navigate("/reservations?intent=book")}
+              onClick={() => navigate("/reservations/book")}
             >
               <Calendar className="size-4" />
               {lang === "fr" ? "Réserver une session" : "Book a session"}
